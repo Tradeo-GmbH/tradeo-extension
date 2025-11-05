@@ -1,0 +1,91 @@
+{
+  "manifest_version": 3,
+  "name": "Tradeo Extension - DEV BUILD",
+  "version": "3.0.1.5",
+  "description": "COPYRIGHT ANDRE BURKARD",
+
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "tradeoextension@tradeo.de",
+      "strict_min_version": "117.0"
+    }
+  },
+
+  "permissions": [
+    "tabs",
+    "clipboardWrite"
+  ],
+
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.plentymarkets-cloud-de.com/*",
+        "https://p7843.my.plentysystems.com/*"
+      ],
+      "js": [
+        "plenty.js"
+      ],
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "https://*.plentymarkets-cloud-de.com/*",
+        "https://p7843.my.plentysystems.com/*"
+      ],
+      "js": [
+        "styles.js"
+      ],
+      "all_frames": true
+    },
+    {
+      "matches": [
+        "https://servershop24.de/*",
+        "https://*.servershop24.de/*"
+      ],
+      "js": [
+        "webshop.js"
+      ],
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "https://desk.tradeo.de/*"
+      ],
+      "js": [
+        "freescout.js"
+      ],
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "clipboardfix.js"
+      ],
+      "all_frames": false
+    }
+  ],
+
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "openMultipleItems.png",
+        "nwb.png"
+      ],
+      "matches": [
+        "https://*.plentymarkets-cloud-de.com/*",
+        "https://p7843.my.plentysystems.com/*",
+        "https://servershop24.de/*",
+        "https://*.servershop24.de/*",
+        "https://desk.tradeo.de/*"
+      ]
+    }
+  ]
+}
