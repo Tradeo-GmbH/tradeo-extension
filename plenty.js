@@ -3113,7 +3113,11 @@ function addButtonsToOrder() {
 	//auskommentiert, weil tagBar in Verwendung:
 	//const firstRow = document.querySelectorAll('terra-my-view-column')[0]
 	const tagBar = document.querySelector('div[class="sortable-list sortableDisabled row"]');
-	const secondRow = document.querySelector('terra-order-ui-payment-method').parentElement.parentElement
+	const secondRowSecondChild = document.querySelector('terra-order-ui-payment-method');
+	let secondRow = null;
+	if (secondRowSecondChild) {
+		secondRow = document.querySelector('terra-order-ui-payment-method').parentElement.parentElement;
+	}
 	const url = window.location.href;
 	const regex = /plenty\/terra\/order\/order-ui[^/]*\/.*(\d{6})/; // Regex für order-ui mit Anhang vor dem nächsten /
 	const match = url.match(regex);
@@ -3703,7 +3707,7 @@ function addButtonsToOrder() {
 		//button2.style.marginLeft = '0px';
 	}
 
-	if (auftragsTyp === "Auftrag" || auftragsTyp === "Angebot" || auftragsTyp === "Gewährleistung") {
+	if ((auftragsTyp === "Auftrag" || auftragsTyp === "Angebot" || auftragsTyp === "Gewährleistung") && secondRow) {
 		const count = secondRow.querySelectorAll('div[class*="my-view-draggable-element"]').length;
 		let insertBeforeSelector = null;
 		if (count % 2 === 0) {
@@ -3742,9 +3746,9 @@ function addButtonsToOrder() {
 		//buttonVorkasse.style.marginLeft = '0px';
 	}
 
-	if (auftragsTyp === "Retoure") {
-		secondRow.insertBefore(buttonDummy, insertBeforeSelector)
-	}
+	//if (auftragsTyp === "Retoure") {
+	//	secondRow.insertBefore(buttonDummy, insertBeforeSelector)
+	//}
 
 	// Selektiere das gewünschte mat-icon Element
 	const emailIcon = Array.from(document.querySelectorAll('mat-icon.mat-icon.notranslate'))
