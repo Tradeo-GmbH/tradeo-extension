@@ -1,5 +1,5 @@
 // URL deines Presence-Servers (Node/Express)
-const PRESENCE_URL = "http://109.230.236.181:3000/presence";
+const PRESENCE_URL = "https://presence.tradeo.risingsilence.de/presence";
 
 function getClientId() {
   return new Promise((resolve) => {
