@@ -13,8 +13,17 @@
 
   "permissions": [
     "tabs",
-    "clipboardWrite"
+    "clipboardWrite",
+    "storage"
   ],
+
+  "host_permissions": [
+    "http://109.230.236.181:3000/*"
+  ],
+
+  "background": {
+    "service_worker": "background.js"
+  },
 
   "icons": {
     "16": "icon16.png",
@@ -31,6 +40,7 @@
       "js": [
         "plenty.js"
       ],
+      "run_at": "document_idle",
       "all_frames": false
     },
     {

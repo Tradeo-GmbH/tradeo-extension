@@ -77,7 +77,7 @@ function thousandSeparator(x){
 button[paymentMethodButton],
 button[statusButton]{
   border: 1px solid rgba(0,0,0,.15);
-  border-radius: 6px;
+  border-radius: 4px;
   font-weight: 600;
   letter-spacing: .01em;
   transition: transform .06s ease, box-shadow .12s ease, filter .12s ease, opacity .12s ease;
@@ -2299,14 +2299,14 @@ document.addEventListener('keydown', (event) => {
             }
         } else if (focusedElement === itemSearchBar) {
 			//previousElement nicht gefunden, also springe in die Suchleiste
-			const firstRow = document.querySelector('.mat-mdc-row.mdc-data-table__row.cdk-row.outline-icons.ng-star-inserted');
-			if (firstRow) {
-				const firstRowQuantityInputField = document.querySelector('.mat-mdc-row.mdc-data-table__row.cdk-row.outline-icons.ng-star-inserted').querySelector('input[type="number"]');
-				if (firstRowQuantityInputField) {
+			const tagBar = document.querySelector('.mat-mdc-row.mdc-data-table__row.cdk-row.outline-icons.ng-star-inserted');
+			if (tagBar) {
+				const tagBarQuantityInputField = document.querySelector('.mat-mdc-row.mdc-data-table__row.cdk-row.outline-icons.ng-star-inserted').querySelector('input[type="number"]');
+				if (tagBarQuantityInputField) {
 					event.preventDefault();
 					//console.log("Zeile 2237: focussing...");
-					firstRowQuantityInputField.focus();
-					firstRowQuantityInputField.select();
+					tagBarQuantityInputField.focus();
+					tagBarQuantityInputField.select();
 				}
 			}
 		}
@@ -2969,6 +2969,8 @@ function addButtonsToNewOrderMenu() {
 	buttonVorkasse.style.width = '120px';
 	buttonVorkasse.style.height = '30px';
 	buttonVorkasse.style.marginLeft = '8px';
+	buttonVorkasse.style.marginTop = '8px';
+	buttonVorkasse.style.marginBottom = '14px';
 	buttonVorkasse.setAttribute("paymentMethodButton", "true");
 
 	const buttonKreditkarte = document.createElement('button');
@@ -2979,6 +2981,8 @@ function addButtonsToNewOrderMenu() {
 	buttonKreditkarte.style.width = '120px';
 	buttonKreditkarte.style.height = '30px';
 	buttonKreditkarte.style.marginLeft = '8px';
+	buttonKreditkarte.style.marginTop = '8px';
+	buttonKreditkarte.style.marginBottom = '14px';
 	buttonKreditkarte.setAttribute("paymentMethodButton", "true");
 
 	const buttonPayPal = document.createElement('button');
@@ -2989,6 +2993,8 @@ function addButtonsToNewOrderMenu() {
 	buttonPayPal.style.width = '120px';
 	buttonPayPal.style.height = '30px';
 	buttonPayPal.style.marginLeft = '8px';
+	buttonPayPal.style.marginTop = '8px';
+	buttonPayPal.style.marginBottom = '14px';
 	buttonPayPal.setAttribute("paymentMethodButton", "true");
 
 	const buttonRechnung = document.createElement('button');
@@ -2999,6 +3005,8 @@ function addButtonsToNewOrderMenu() {
 	buttonRechnung.style.width = '120px';
 	buttonRechnung.style.height = '30px';
 	buttonRechnung.style.marginLeft = '8px';
+	buttonRechnung.style.marginTop = '8px';
+	buttonRechnung.style.marginBottom = '14px';
 	buttonRechnung.setAttribute("paymentMethodButton", "true");
 
 	const buttonBarzahlung = document.createElement('button');
@@ -3009,37 +3017,73 @@ function addButtonsToNewOrderMenu() {
 	buttonBarzahlung.style.width = '120px';
 	buttonBarzahlung.style.height = '30px';
 	buttonBarzahlung.style.marginLeft = '8px';
+	buttonBarzahlung.style.marginTop = '8px';
+	buttonBarzahlung.style.marginBottom = '14px';
 	buttonBarzahlung.setAttribute("paymentMethodButton", "true");
 
-	const container = paymentSelector.parentElement.parentElement.parentElement;
+	const container = paymentSelector.parentElement;
 
-	container.appendChild(buttonVorkasse);
+	container.insertBefore(buttonVorkasse, paymentSelector);
 	buttonVorkasse.addEventListener('click', async () => {
 	await changePaymentMethodNewOrder("Vorkasse");
 	});
 
-	container.appendChild(buttonKreditkarte);
+	container.insertBefore(buttonKreditkarte, paymentSelector);
 	buttonKreditkarte.addEventListener('click', async () => {
 	await changePaymentMethodNewOrder("Mollie: Kreditkarte");
 	});
 
-	container.appendChild(buttonPayPal);
+	container.insertBefore(buttonPayPal, paymentSelector);
 	buttonPayPal.addEventListener('click', async () => {
 	await changePaymentMethodNewOrder("PayPal: PayPal");
 	});
 
-	container.appendChild(buttonRechnung);
+	container.insertBefore(buttonRechnung, paymentSelector);
 	buttonRechnung.addEventListener('click', async () => {
 	await changePaymentMethodNewOrder("Rechnung");
 	});
 
-	container.appendChild(buttonBarzahlung);
+	container.insertBefore(buttonBarzahlung, paymentSelector);
 	buttonBarzahlung.addEventListener('click', async () => {
 	await changePaymentMethodNewOrder("Barzahlung");
 	});
 
-	buttonVorkasse.style.marginLeft = '0px';
+	//buttonVorkasse.style.marginLeft = '0px';
 }
+
+function moveZahlungsartToEnd() {
+  const paymentMethodHost = document.querySelector('terra-order-ui-payment-method');
+  if (!paymentMethodHost) return;
+
+  const root = paymentMethodHost.parentElement?.parentElement;
+  if (!root) return;
+
+  const cards = root.querySelectorAll('div[class*="my-view-draggable-element col-6"');
+
+  let zahlungsartEl = null;
+
+  for (const el of cards) {
+    const txt = (el.innerText || '').trim();
+    if (txt.startsWith('Zahlungsart')) {
+      zahlungsartEl = el;
+      break;
+    }
+  }
+
+  if (!zahlungsartEl) return;
+
+  const parent = zahlungsartEl.parentElement;
+  if (!parent) return;
+
+  // Wenn bereits letztes Child → nichts tun
+  if (parent.lastElementChild === zahlungsartEl) {
+    return;
+  }
+
+  // Element als letztes Child des Parents einreihen
+  parent.appendChild(zahlungsartEl);
+};
+
 
 
 function addButtonsToOrder() {
@@ -3058,9 +3102,18 @@ function addButtonsToOrder() {
 		return;
 	}
 
-	const firstRow = document.querySelectorAll('terra-my-view-column')[0]
-	const secondRow = document.querySelectorAll('terra-my-view-column')[1]
+	const wawiPresenceContainer = document.querySelector('div[id="wawi-presence-container"]');
 
+	if (!auftragsTyp) {
+		return;
+	}
+
+	moveZahlungsartToEnd()
+
+	//auskommentiert, weil tagBar in Verwendung:
+	//const firstRow = document.querySelectorAll('terra-my-view-column')[0]
+	const tagBar = document.querySelector('div[class="sortable-list sortableDisabled row"]');
+	const secondRow = document.querySelector('terra-order-ui-payment-method').parentElement.parentElement
 	const url = window.location.href;
 	const regex = /plenty\/terra\/order\/order-ui[^/]*\/.*(\d{6})/; // Regex für order-ui mit Anhang vor dem nächsten /
 	const match = url.match(regex);
@@ -3069,13 +3122,17 @@ function addButtonsToOrder() {
 		oid = match[1];
 	}
 
-	if (firstRow.getAttribute('data-check') && firstRow.getAttribute('id').includes(oid)) {
+	if (tagBar.getAttribute('data-check') && tagBar.getAttribute('id').includes(oid)) {
+		return;
+	}
+
+	if (!tagBar) {
 		return;
 	}
 
 	// Setze das Attribut data-check = "true"
-	firstRow.setAttribute('data-check', 'true');
-	firstRow.id = "firstRow_" + oid;
+	tagBar.setAttribute('data-check', 'true');
+	tagBar.id = "tagBar_" + oid;
 
 	const previousStatusButtons = document.querySelectorAll('button[statusButton]');
 	previousStatusButtons.forEach(button => button.remove());
@@ -3090,6 +3147,7 @@ function addButtonsToOrder() {
 	button2.style.width = '54px';
 	button2.style.height = '30px';
 	button2.style.marginLeft = '8px';
+	button2.style.marginBottom = '8px';
 	button2.setAttribute("statusButton", "true");
 
 	const button2dot01 = document.createElement('button');
@@ -3100,6 +3158,7 @@ function addButtonsToOrder() {
 	button2dot01.style.width = '54px';
 	button2dot01.style.height = '30px';
 	button2dot01.style.marginLeft = '8px';
+	button2dot01.style.marginBottom = '8px';
 	button2dot01.setAttribute("statusButton", "true");
 
 	const button2dot1 = document.createElement('button');
@@ -3110,6 +3169,7 @@ function addButtonsToOrder() {
 	button2dot1.style.width = '54px';
 	button2dot1.style.height = '30px';
 	button2dot1.style.marginLeft = '8px';
+	button2dot1.style.marginBottom = '8px';
 	button2dot1.setAttribute("statusButton", "true");
 
 	const button2dot32 = document.createElement('button');
@@ -3120,6 +3180,7 @@ function addButtonsToOrder() {
 	button2dot32.style.width = '54px';
 	button2dot32.style.height = '30px';
 	button2dot32.style.marginLeft = '8px';
+	button2dot32.style.marginBottom = '8px';
 	button2dot32.setAttribute("statusButton", "true");
 
 	const button2dot5 = document.createElement('button');
@@ -3130,6 +3191,7 @@ function addButtonsToOrder() {
 	button2dot5.style.width = '54px';
 	button2dot5.style.height = '30px';
 	button2dot5.style.marginLeft = '8px';
+	button2dot5.style.marginBottom = '8px';
 	button2dot5.setAttribute("statusButton", "true");
 
 	const button2dot7 = document.createElement('button');
@@ -3140,6 +3202,7 @@ function addButtonsToOrder() {
 	button2dot7.style.width = '54px';
 	button2dot7.style.height = '30px';
 	button2dot7.style.marginLeft = '8px';
+	button2dot7.style.marginBottom = '8px';
 	button2dot7.setAttribute("statusButton", "true");
 
 	const button2dot9 = document.createElement('button');
@@ -3150,6 +3213,7 @@ function addButtonsToOrder() {
 	button2dot9.style.width = '54px';
 	button2dot9.style.height = '30px';
 	button2dot9.style.marginLeft = '8px';
+	button2dot9.style.marginBottom = '8px';
 	button2dot9.setAttribute("statusButton", "true");
 
 	const button2dot91 = document.createElement('button');
@@ -3160,6 +3224,7 @@ function addButtonsToOrder() {
 	button2dot91.style.width = '54px';
 	button2dot91.style.height = '30px';
 	button2dot91.style.marginLeft = '8px';
+	button2dot91.style.marginBottom = '8px';
 	button2dot91.setAttribute("statusButton", "true");
 
 	const button3 = document.createElement('button');
@@ -3170,6 +3235,7 @@ function addButtonsToOrder() {
 	button3.style.width = '54px';
 	button3.style.height = '30px';
 	button3.style.marginLeft = '8px';
+	button3.style.marginBottom = '8px';
 	button3.setAttribute("statusButton", "true");
 
 	const button3dot93 = document.createElement('button');
@@ -3180,6 +3246,7 @@ function addButtonsToOrder() {
 	button3dot93.style.width = '54px';
 	button3dot93.style.height = '30px';
 	button3dot93.style.marginLeft = '8px';
+	button3dot93.style.marginBottom = '8px';
 	button3dot93.setAttribute("statusButton", "true");
 
 	const button4dot91 = document.createElement('button');
@@ -3190,6 +3257,7 @@ function addButtonsToOrder() {
 	button4dot91.style.width = '54px';
 	button4dot91.style.height = '30px';
 	button4dot91.style.marginLeft = '8px';
+	button4dot91.style.marginBottom = '8px';
 	button4dot91.setAttribute("statusButton", "true");
 
 	const button5 = document.createElement('button');
@@ -3200,6 +3268,7 @@ function addButtonsToOrder() {
 	button5.style.width = '54px';
 	button5.style.height = '30px';
 	button5.style.marginLeft = '8px';
+	button5.style.marginBottom = '8px';
 	button5.setAttribute("statusButton", "true");
 
 	const button5dot1 = document.createElement('button');
@@ -3210,6 +3279,7 @@ function addButtonsToOrder() {
 	button5dot1.style.width = '54px';
 	button5dot1.style.height = '30px';
 	button5dot1.style.marginLeft = '8px';
+	button5dot1.style.marginBottom = '8px';
 	button5dot1.setAttribute("statusButton", "true");
 
 	const button5dot12 = document.createElement('button');
@@ -3220,6 +3290,7 @@ function addButtonsToOrder() {
 	button5dot12.style.width = '54px';
 	button5dot12.style.height = '30px';
 	button5dot12.style.marginLeft = '8px';
+	button5dot12.style.marginBottom = '8px';
 	button5dot12.setAttribute("statusButton", "true");
 
 	const button6dot01 = document.createElement('button');
@@ -3230,6 +3301,7 @@ function addButtonsToOrder() {
 	button6dot01.style.width = '54px';
 	button6dot01.style.height = '30px';
 	button6dot01.style.marginLeft = '8px';
+	button6dot01.style.marginBottom = '8px';
 	button6dot01.setAttribute("statusButton", "true");
 
 	const button8 = document.createElement('button');
@@ -3240,6 +3312,7 @@ function addButtonsToOrder() {
 	button8.style.width = '54px';
 	button8.style.height = '30px';
 	button8.style.marginLeft = '8px';
+	button8.style.marginBottom = '8px';
 	button8.setAttribute("statusButton", "true");
 
 	const button8dot2 = document.createElement('button');
@@ -3250,6 +3323,7 @@ function addButtonsToOrder() {
 	button8dot2.style.width = '54px';
 	button8dot2.style.height = '30px';
 	button8dot2.style.marginLeft = '8px';
+	button8dot2.style.marginBottom = '8px';
 	button8dot2.setAttribute("statusButton", "true");
 
 	const button8dot5 = document.createElement('button');
@@ -3260,6 +3334,7 @@ function addButtonsToOrder() {
 	button8dot5.style.width = '54px';
 	button8dot5.style.height = '30px';
 	button8dot5.style.marginLeft = '8px';
+	button8dot5.style.marginBottom = '8px';
 	button8dot5.setAttribute("statusButton", "true");
 
 	const button9dot10 = document.createElement('button');
@@ -3270,6 +3345,7 @@ function addButtonsToOrder() {
 	button9dot10.style.width = '54px';
 	button9dot10.style.height = '30px';
 	button9dot10.style.marginLeft = '8px';
+	button9dot10.style.marginBottom = '8px';
 	button9dot10.setAttribute("statusButton", "true");
 
 	const button9dot21 = document.createElement('button');
@@ -3280,6 +3356,7 @@ function addButtonsToOrder() {
 	button9dot21.style.width = '54px';
 	button9dot21.style.height = '30px';
 	button9dot21.style.marginLeft = '8px';
+	button9dot21.style.marginBottom = '8px';
 	button9dot21.setAttribute("statusButton", "true");
 
 	const button9dot22 = document.createElement('button');
@@ -3290,6 +3367,7 @@ function addButtonsToOrder() {
 	button9dot22.style.width = '54px';
 	button9dot22.style.height = '30px';
 	button9dot22.style.marginLeft = '8px';
+	button9dot22.style.marginBottom = '8px';
 	button9dot22.setAttribute("statusButton", "true");
 
 	const button9dot31 = document.createElement('button');
@@ -3300,6 +3378,7 @@ function addButtonsToOrder() {
 	button9dot31.style.width = '54px';
 	button9dot31.style.height = '30px';
 	button9dot31.style.marginLeft = '8px';
+	button9dot31.style.marginBottom = '8px';
 	button9dot31.setAttribute("statusButton", "true");
 
 	const button9dot32 = document.createElement('button');
@@ -3310,6 +3389,7 @@ function addButtonsToOrder() {
 	button9dot32.style.width = '54px';
 	button9dot32.style.height = '30px';
 	button9dot32.style.marginLeft = '8px';
+	button9dot32.style.marginBottom = '8px';
 	button9dot32.setAttribute("statusButton", "true");
 
 	const button9dot33 = document.createElement('button');
@@ -3320,6 +3400,7 @@ function addButtonsToOrder() {
 	button9dot33.style.width = '54px';
 	button9dot33.style.height = '30px';
 	button9dot33.style.marginLeft = '8px';
+	button9dot33.style.marginBottom = '8px';
 	button9dot33.setAttribute("statusButton", "true");
 
 	const button9dot80 = document.createElement('button');
@@ -3330,7 +3411,7 @@ function addButtonsToOrder() {
 	button9dot80.style.width = '54px';
 	button9dot80.style.height = '30px';
 	button9dot80.style.marginLeft = '8px';
-	button9dot80.style.marginLeft = '8px';
+	button9dot80.style.marginBottom = '8px';
 	button9dot80.setAttribute("statusButton", "true");
 
 	const button9dot91 = document.createElement('button');
@@ -3341,6 +3422,7 @@ function addButtonsToOrder() {
 	button9dot91.style.width = '54px';
 	button9dot91.style.height = '30px';
 	button9dot91.style.marginLeft = '8px';
+	button9dot91.style.marginBottom = '8px';
 	button9dot91.setAttribute("statusButton", "true");
 
 	const button9dot92 = document.createElement('button');
@@ -3351,6 +3433,7 @@ function addButtonsToOrder() {
 	button9dot92.style.width = '54px';
 	button9dot92.style.height = '30px';
 	button9dot92.style.marginLeft = '8px';
+	button9dot92.style.marginBottom = '8px';
 	button9dot92.setAttribute("statusButton", "true");
 
 
@@ -3371,6 +3454,7 @@ function addButtonsToOrder() {
 	buttonDummy.style.width = '120px';
 	buttonDummy.style.height = '25px';
 	buttonDummy.style.marginLeft = '8px';
+	buttonDummy.style.marginBottom = '8px';
 
 	// Unsichtbar/transparent, aber nimmt Platz ein
 	buttonDummy.style.opacity = '0';
@@ -3396,6 +3480,7 @@ function addButtonsToOrder() {
 	buttonVorkasse.style.width = '120px';
 	buttonVorkasse.style.height = '30px';
 	buttonVorkasse.style.marginLeft = '8px';
+	buttonVorkasse.style.marginBottom = '8px';
 	buttonVorkasse.setAttribute("paymentMethodButton", "true");
 
 	const buttonKreditkarte = document.createElement('button');
@@ -3406,6 +3491,7 @@ function addButtonsToOrder() {
 	buttonKreditkarte.style.width = '120px';
 	buttonKreditkarte.style.height = '30px';
 	buttonKreditkarte.style.marginLeft = '8px';
+	buttonKreditkarte.style.marginBottom = '8px';
 	buttonKreditkarte.setAttribute("paymentMethodButton", "true");
 
 	const buttonPayPal = document.createElement('button');
@@ -3416,6 +3502,7 @@ function addButtonsToOrder() {
 	buttonPayPal.style.width = '120px';
 	buttonPayPal.style.height = '30px';
 	buttonPayPal.style.marginLeft = '8px';
+	buttonPayPal.style.marginBottom = '8px';
 	buttonPayPal.setAttribute("paymentMethodButton", "true");
 
 	const buttonRechnung = document.createElement('button');
@@ -3426,6 +3513,7 @@ function addButtonsToOrder() {
 	buttonRechnung.style.width = '120px';
 	buttonRechnung.style.height = '30px';
 	buttonRechnung.style.marginLeft = '8px';
+	buttonRechnung.style.marginBottom = '8px';
 	buttonRechnung.setAttribute("paymentMethodButton", "true");
 
 	const buttonBarzahlung = document.createElement('button');
@@ -3436,215 +3524,226 @@ function addButtonsToOrder() {
 	buttonBarzahlung.style.width = '120px';
 	buttonBarzahlung.style.height = '30px';
 	buttonBarzahlung.style.marginLeft = '8px';
+	buttonBarzahlung.style.marginBottom = '8px';
 	buttonBarzahlung.setAttribute("paymentMethodButton", "true");
 
 
 	if (auftragsTyp === "Angebot") {
-		firstRow.insertBefore(button8dot5, firstRow.firstChild);
+		tagBar.insertBefore(button8dot5, tagBar.firstChild);
 		button8dot5.addEventListener('click', async () => {
 			await changeStatus("8.5");
 		});
 
-		firstRow.insertBefore(button2dot5, firstRow.firstChild);
+		tagBar.insertBefore(button2dot5, tagBar.firstChild);
 		button2dot5.addEventListener('click', async () => {
 			await changeStatus("2.5");
 		});
 
-		firstRow.insertBefore(button2dot32, firstRow.firstChild);
+		tagBar.insertBefore(button2dot32, tagBar.firstChild);
 		button2dot32.addEventListener('click', async () => {
 			await changeStatus("2.32");
 		});
 
-		button2dot32.style.marginLeft = '0px';
+		//button2dot32.style.marginLeft = '0px';
 	} else if (auftragsTyp === "Auftrag") {
-		firstRow.insertBefore(button8, firstRow.firstChild);
+		tagBar.insertBefore(button8, tagBar.firstChild);
 		button8.addEventListener('click', async () => {
 			await changeStatus("8");
 		});
 
-		firstRow.insertBefore(button6dot01, firstRow.firstChild);
+		tagBar.insertBefore(button6dot01, tagBar.firstChild);
 		button6dot01.addEventListener('click', async () => {
 			await changeStatus("6.01");
 		});
 		
-		firstRow.insertBefore(button5dot12, firstRow.firstChild);
+		tagBar.insertBefore(button5dot12, tagBar.firstChild);
 		button5dot12.addEventListener('click', async () => {
 			await changeStatus("5.12");
 		});
 
-		firstRow.insertBefore(button5dot1, firstRow.firstChild);
+		tagBar.insertBefore(button5dot1, tagBar.firstChild);
 		button5dot1.addEventListener('click', async () => {
 			await changeStatus("5.1");
 		});
 
-		firstRow.insertBefore(button5, firstRow.firstChild);
+		tagBar.insertBefore(button5, tagBar.firstChild);
 		button5.addEventListener('click', async () => {
 			await changeStatus("5");
 		});
 
-		firstRow.insertBefore(button4dot91, firstRow.firstChild);
+		tagBar.insertBefore(button4dot91, tagBar.firstChild);
 		button4dot91.addEventListener('click', async () => {
 			await changeStatus("4.91");
 		});
 
-		firstRow.insertBefore(button3dot93, firstRow.firstChild);
+		tagBar.insertBefore(button3dot93, tagBar.firstChild);
 		button3dot93.addEventListener('click', async () => {
 			await changeStatus("3.93");
 		});
 
-		firstRow.insertBefore(button3, firstRow.firstChild);
+		tagBar.insertBefore(button3, tagBar.firstChild);
 		button3.addEventListener('click', async () => {
 			await changeStatus("3");
 		});
 
-		firstRow.insertBefore(button2dot91, firstRow.firstChild);
+		tagBar.insertBefore(button2dot91, tagBar.firstChild);
 		button2dot91.addEventListener('click', async () => {
 			await changeStatus("2.91");
 		});
 
-		firstRow.insertBefore(button2dot9, firstRow.firstChild);
+		tagBar.insertBefore(button2dot9, tagBar.firstChild);
 		button2dot9.addEventListener('click', async () => {
 			await changeStatus("2.9");
 		});
 
-		firstRow.insertBefore(button2dot7, firstRow.firstChild);
+		tagBar.insertBefore(button2dot7, tagBar.firstChild);
 		button2dot7.addEventListener('click', async () => {
 			await changeStatus("2.7");
 		});
 
-		firstRow.insertBefore(button2dot1, firstRow.firstChild);
+		tagBar.insertBefore(button2dot1, tagBar.firstChild);
 		button2dot1.addEventListener('click', async () => {
 			await changeStatus("2.1");
 		});
 
-		firstRow.insertBefore(button2dot01, firstRow.firstChild);
+		tagBar.insertBefore(button2dot01, tagBar.firstChild);
 		button2dot01.addEventListener('click', async () => {
 			await changeStatus("2.01");
 		});
 
-		firstRow.insertBefore(button2, firstRow.firstChild);
+		tagBar.insertBefore(button2, tagBar.firstChild);
 		button2.addEventListener('click', async () => {
 			await changeStatus("2");
 		});
 
-		button2.style.marginLeft = '0px';
+		//button2.style.marginLeft = '0px';
 	} else if (auftragsTyp === "Retoure") {
-		firstRow.insertBefore(button9dot92, firstRow.firstChild);
+		tagBar.insertBefore(button9dot92, tagBar.firstChild);
 		button9dot92.addEventListener('click', async () => {
 			await changeStatus("9.92");
 		});
 
-		firstRow.insertBefore(button9dot91, firstRow.firstChild);
+		tagBar.insertBefore(button9dot91, tagBar.firstChild);
 		button9dot91.addEventListener('click', async () => {
 			await changeStatus("9.91");
 		});
 
-		firstRow.insertBefore(button9dot80, firstRow.firstChild);
+		tagBar.insertBefore(button9dot80, tagBar.firstChild);
 		button9dot80.addEventListener('click', async () => {
 			await changeStatus("9.80");
 		});
 
-		firstRow.insertBefore(button9dot33, firstRow.firstChild);
+		tagBar.insertBefore(button9dot33, tagBar.firstChild);
 		button9dot33.addEventListener('click', async () => {
 			await changeStatus("9.33");
 		});
 
-		firstRow.insertBefore(button9dot32, firstRow.firstChild);
+		tagBar.insertBefore(button9dot32, tagBar.firstChild);
 		button9dot32.addEventListener('click', async () => {
 			await changeStatus("9.32");
 		});
 
-		firstRow.insertBefore(button9dot31, firstRow.firstChild);
+		tagBar.insertBefore(button9dot31, tagBar.firstChild);
 		button9dot31.addEventListener('click', async () => {
 			await changeStatus("9.31");
 		});
 
-		firstRow.insertBefore(button9dot22, firstRow.firstChild);
+		tagBar.insertBefore(button9dot22, tagBar.firstChild);
 		button9dot22.addEventListener('click', async () => {
 			await changeStatus("9.22");
 		});
 
-		firstRow.insertBefore(button9dot21, firstRow.firstChild);
+		tagBar.insertBefore(button9dot21, tagBar.firstChild);
 		button9dot21.addEventListener('click', async () => {
 			await changeStatus("9.21");
 		});
 
-		firstRow.insertBefore(button9dot10, firstRow.firstChild);
+		tagBar.insertBefore(button9dot10, tagBar.firstChild);
 		button9dot10.addEventListener('click', async () => {
 			await changeStatus("9.10");
 		});
 
-		firstRow.insertBefore(button8dot2, firstRow.firstChild);
+		tagBar.insertBefore(button8dot2, tagBar.firstChild);
 		button8dot2.addEventListener('click', async () => {
 			await changeStatus("8.2");
 		});
 
-		button8dot2.style.marginLeft = '0px';
+		//button8dot2.style.marginLeft = '0px';
 	} else if (auftragsTyp === "Gewährleistung") {
-		firstRow.insertBefore(button8, firstRow.firstChild);
+		tagBar.insertBefore(button8, tagBar.firstChild);
 		button8.addEventListener('click', async () => {
 			await changeStatus("8");
 		});
 
-		firstRow.insertBefore(button6dot01, firstRow.firstChild);
+		tagBar.insertBefore(button6dot01, tagBar.firstChild);
 		button6dot01.addEventListener('click', async () => {
 			await changeStatus("6.01");
 		});
 
-		firstRow.insertBefore(button5dot12, firstRow.firstChild);
+		tagBar.insertBefore(button5dot12, tagBar.firstChild);
 		button5dot12.addEventListener('click', async () => {
 			await changeStatus("5.12");
 		});
 
-		firstRow.insertBefore(button5dot1, firstRow.firstChild);
+		tagBar.insertBefore(button5dot1, tagBar.firstChild);
 		button5dot1.addEventListener('click', async () => {
 			await changeStatus("5.1");
 		});
 
-		firstRow.insertBefore(button5, firstRow.firstChild);
+		tagBar.insertBefore(button5, tagBar.firstChild);
 		button5.addEventListener('click', async () => {
 			await changeStatus("5");
 		});
 
-		firstRow.insertBefore(button2, firstRow.firstChild);
+		tagBar.insertBefore(button2, tagBar.firstChild);
 		button2.addEventListener('click', async () => {
 			await changeStatus("2");
 		});
 
-		button2.style.marginLeft = '0px';
+		//button2.style.marginLeft = '0px';
 	}
 
 	if (auftragsTyp === "Auftrag" || auftragsTyp === "Angebot" || auftragsTyp === "Gewährleistung") {
-		secondRow.insertBefore(buttonBarzahlung, secondRow.firstChild)
+		const count = secondRow.querySelectorAll('div[class*="my-view-draggable-element"]').length;
+		let insertBeforeSelector = null;
+		if (count % 2 === 0) {
+		// gerade Anzahl
+			insertBeforeSelector = secondRow.lastElementChild.previousElementSibling;
+		} else {
+		// ungerade Anzahl
+			insertBeforeSelector = secondRow.lastElementChild;
+		}
+
+		secondRow.insertBefore(buttonBarzahlung, insertBeforeSelector)
 		buttonBarzahlung.addEventListener('click', async () => {
 			await changePaymentMethod("Barzahlung");
 		});
 
-		secondRow.insertBefore(buttonRechnung, secondRow.firstChild)
+		secondRow.insertBefore(buttonRechnung, insertBeforeSelector)
 		buttonRechnung.addEventListener('click', async () => {
 			await changePaymentMethod("Rechnung");
 		});
 
-		secondRow.insertBefore(buttonPayPal, secondRow.firstChild)
+		secondRow.insertBefore(buttonPayPal, insertBeforeSelector)
 		buttonPayPal.addEventListener('click', async () => {
 			await changePaymentMethod("PayPal: PayPal");
 		});
 
-		secondRow.insertBefore(buttonKreditkarte, secondRow.firstChild)
+		secondRow.insertBefore(buttonKreditkarte, insertBeforeSelector)
 		buttonKreditkarte.addEventListener('click', async () => {
 			await changePaymentMethod("Mollie: Kreditkarte");
 		});
 
-		secondRow.insertBefore(buttonVorkasse, secondRow.firstChild)
+		secondRow.insertBefore(buttonVorkasse, insertBeforeSelector)
 		buttonVorkasse.addEventListener('click', async () => {
 			await changePaymentMethod("Vorkasse");
 		});
 
-		buttonVorkasse.style.marginLeft = '0px';
+		//buttonVorkasse.style.marginLeft = '0px';
 	}
 
 	if (auftragsTyp === "Retoure") {
-		secondRow.insertBefore(buttonDummy, secondRow.firstChild)
+		secondRow.insertBefore(buttonDummy, insertBeforeSelector)
 	}
 
 	// Selektiere das gewünschte mat-icon Element
@@ -3678,7 +3777,8 @@ function addButtonsToOrder() {
 			clone.removeAttribute('mat-ripple-loader-disabled');
 			clone.removeAttribute('disabled');
 			clone.classList.remove('mat-mdc-button-disabled');
-			parent.appendChild(clone); // Füge die Kopie als Kind des Elternknotens ein
+			parent.insertBefore(clone, wawiPresenceContainer); // Füge die Kopie als Kind des Elternknotens ein, aber VOR dem wawiPresenceContainer
+			//parent.appendChild(clone); // Füge die Kopie als Kind des Elternknotens ein
 			const span = document.createElement('span');
 			span.style.cssText = 'font-weight: bold; position: absolute; left: 9.5px; bottom: 2px; font-size: 10px;';
 			span.textContent = 'ANG';
@@ -3695,7 +3795,8 @@ function addButtonsToOrder() {
 		} else if (parent && auftragsTyp === "Auftrag") {
 			for (let i = 0; i < 3; i++) {
 				const clone = emailButton.cloneNode(true); // Erstelle eine Kopie des Elements
-				parent.appendChild(clone); // Füge die Kopie als Kind des Elternknotens ein
+				parent.insertBefore(clone, wawiPresenceContainer); // Füge die Kopie als Kind des Elternknotens ein, aber VOR dem wawiPresenceContainer
+				//parent.appendChild(clone); // Füge die Kopie als Kind des Elternknotens ein
 				clone.removeAttribute('mat-ripple-loader-disabled');
 				clone.removeAttribute('disabled');
 				clone.classList.remove('mat-mdc-button-disabled');
@@ -5410,6 +5511,324 @@ function searchBarEnterEnhancementForSearchFilterReset() {
 
 
 
+
+
+
+
+
+function fixMyViewColumns() {
+  const rows = document.querySelectorAll(
+    'terra-my-view-container div.container-fluid terra-my-view-row > div.row'
+  );
+
+  rows.forEach((row) => {
+    // Nur echte Grid-Spalten mit col-… Klassen nehmen
+    const cols = Array.from(row.children).filter((el) =>
+      el.matches('[class*="col-"]')
+    );
+    if (!cols.length) return;
+
+    const width = (100 / cols.length) + '%';
+
+    // Row selbst auf Flex setzen, kein Wrap
+    row.style.display = 'flex';
+    row.style.flexWrap = 'nowrap';
+
+    cols.forEach((col) => {
+      col.style.flex = `0 0 ${width}`; // Basisbreite = 100% / n
+      col.style.maxWidth = width;      // Bootstrap max-width aushebeln
+      col.style.minWidth = '0';        // Inhalt darf schrumpfen
+    });
+  });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const DEFAULT_USER_NAME = "UNBEKANNT";
+let presenceUserName = null; // wird aus dem Header gelesen
+let lastPresenceLayoutKey = null;
+
+function getUserNameFromPage() {
+  // Dein gefundenes Element:
+  const el = document.querySelector(
+    'a[terranewrelicevent="NAV_BAR:RIGHT_SECTION:ACCOUNTS"]'
+  );
+
+  if (!el) return null;
+
+  // innerHTML ist bei dir schon der Name, aber textContent ist robuster
+  const raw =
+    (el.textContent || el.innerText || el.innerHTML || "").trim();
+
+  return raw || null;
+}
+
+// URL-Pattern:
+// "order-ui" gefolgt von optional "_" + Zahl,
+// dann "/" + sechsstellige Zahl => die 6-stellige Zahl ist die orderId
+function getOrderIdFromLocation() {
+  const path = window.location.pathname; // z.B. /terra/order-ui_123/654321
+  const match = path.match(/order-ui(?:_\d+)?\/(\d{6})/);
+  if (match) {
+    return match[1]; // die 6-stellige Order-ID
+  }
+  return null;
+}
+
+function ensurePresenceContainer() {
+  let container = document.querySelector("#wawi-presence-container");
+  if (container) return container;
+
+  const headerSection = document.querySelector('section[class="terra-page-header-actions"]');
+  if (!headerSection) return null;
+
+  const host = headerSection.querySelector("terra-order-ui-toolbar-elements");
+  if (!host) return null;
+
+  container = document.createElement("div");
+  container.id = "wawi-presence-container";
+  container.style.display = "inline-flex";
+  container.style.alignItems = "center";
+  container.style.marginLeft = "4px";
+  container.style.marginTop = "8px";
+  container.style.position = "absolute";
+  // keine eigenen Farben hier – die kommen auf die einzelnen Kacheln
+
+  host.appendChild(container);
+  return container;
+}
+
+function createPresenceTile(label, isSelf) {
+  const tile = document.createElement("div");
+  tile.className = "wawi-presence-tile";
+  tile.style.display = "inline-flex";
+  tile.style.alignItems = "center";
+  tile.style.marginLeft = "8px";
+  tile.style.marginBottom = "0px";
+  tile.style.padding = "3px 12px 1px 12px";
+  tile.style.fontSize = "13px";
+  tile.style.fontWeight = "500";
+  tile.style.fontFamily = "system-ui, sans-serif";
+  tile.style.color = "#ffffff";
+  tile.style.borderRadius = "20px";
+
+  if (isSelf) {
+    // "Ich"-Kachel
+    tile.textContent = "Ich";
+    tile.style.background = "rgba(31, 31, 31, 1)";
+  } else {
+    // andere User
+    tile.textContent = label;
+    tile.style.background = "rgba(79, 79, 79, 1)";
+  }
+
+  if (label.includes("Altermann")) {
+	tile.style.background = "rgba(161, 100, 0, 1)";
+  } else if (label.includes("Koop")) {
+	tile.style.background = "rgba(0, 100, 0, 1)";
+  } else if (label.includes("Schwarz")) {
+	tile.style.background = "rgba(111, 119, 0, 1)";
+  } else if (label.includes("Herudek")) {
+	tile.style.background = "rgba(95, 0, 95, 1)";
+  } else if (label.includes("Burkard")) {
+	tile.style.background = "rgba(0, 37,105, 1)";
+  } else if (label.includes("Lotter")) {
+	tile.style.background = "rgba(120, 0, 0, 1)";
+  }
+
+  return tile;
+}
+
+let presenceIntervalId = null;
+let lastOrderId = null;
+
+function updatePresenceOnce() {
+  const currentOrderId = getOrderIdFromLocation();
+  const container = document.querySelector("#wawi-presence-container");
+
+  // Wenn Username noch nicht geladen wurde, warten wir
+  if (!presenceUserName) {
+    return;
+  }
+
+  // 1) Kein Auftrag in der URL
+  if (!currentOrderId) {
+    // Wenn wir vorher in einem Auftrag waren -> CLEAR schicken
+    if (lastOrderId) {
+      chrome.runtime.sendMessage(
+        { type: "presenceClear", orderId: lastOrderId },
+        () => {}
+      );
+      console.log("[Presence] Auftrag verlassen:", lastOrderId);
+      lastOrderId = null;
+    }
+    // Container entfernen
+    if (container) {
+      container.remove();
+    }
+    lastPresenceLayoutKey = null;
+    return;
+  }
+
+  // 2) Es gibt eine Order-ID -> Container sicherstellen
+  let presenceContainer = container;
+  if (!presenceContainer) {
+    presenceContainer = ensurePresenceContainer();
+    if (!presenceContainer) {
+      // Host-Container ist noch nicht im DOM, wir warten bis zum nächsten Tick
+      return;
+    }
+  }
+
+  // 3) Order-Wechsel: alten Auftrag auf dem Server löschen
+  if (lastOrderId && currentOrderId !== lastOrderId) {
+    chrome.runtime.sendMessage(
+      { type: "presenceClear", orderId: lastOrderId },
+      () => {}
+    );
+    console.log("[Presence] Auftrag gewechselt:", lastOrderId, "→", currentOrderId);
+  }
+  lastOrderId = currentOrderId;
+
+  const userName = presenceUserName || DEFAULT_USER_NAME;
+
+  // 4) Presence-Update an Background schicken
+  chrome.runtime.sendMessage(
+    {
+      type: "presenceUpdate",
+      orderId: currentOrderId,
+      userName
+    },
+    (response) => {
+      if (!response || !response.ok) {
+        console.warn(
+          "[Presence] Fehler bei Presence-Update:",
+          response && response.error
+        );
+        // Bei Nichtfunktionalität: keine Kacheln anzeigen
+        if (presenceContainer) {
+          presenceContainer.innerHTML = "";
+        }
+        lastPresenceLayoutKey = null;
+        return;
+      }
+
+      const clients = Array.isArray(response.clients) ? response.clients : [];
+      const selfClientId = response.selfClientId || null;
+
+      const activeClientCount =
+        typeof response.activeClientCount === "number"
+          ? response.activeClientCount
+          : clients.length;
+
+      // Keine aktiven Clients -> Container leeren
+      if (activeClientCount === 0 || clients.length === 0) {
+        presenceContainer.innerHTML = "";
+        lastPresenceLayoutKey = null;
+        return;
+      }
+
+      // Clients in "ich" und "andere" aufteilen
+      const others = [];
+      let hasSelf = false;
+
+      for (const c of clients) {
+        if (selfClientId && c.clientId === selfClientId) {
+          hasSelf = true;
+        } else {
+          others.push(c);
+        }
+      }
+
+      // Layout-Key anhand der clientIds bauen (Reihenfolge: others, dann self)
+      const otherIds = others.map((c) => c.clientId).join(",");
+      const selfIdPart = hasSelf && selfClientId ? selfClientId : "";
+      const layoutKey = otherIds + "|" + selfIdPart;
+
+      // Wenn sich das Layout nicht geändert hat -> nichts am DOM machen
+      if (layoutKey === lastPresenceLayoutKey) {
+        return;
+      }
+      lastPresenceLayoutKey = layoutKey;
+
+      // Ab hier: wirklich neu rendern, weil sich etwas geändert hat
+
+      presenceContainer.innerHTML = "";
+
+      // 1) Alle anderen User linksbündig anhängen
+      others.forEach((c) => {
+        const tile = createPresenceTile(c.userName, false);
+        presenceContainer.appendChild(tile);
+      });
+
+      // 2) Eigene "Ich"-Kachel ganz rechts
+      if (hasSelf) {
+        const selfTile = createPresenceTile("Ich", true);
+        presenceContainer.appendChild(selfTile);
+      }
+    }
+  );
+}
+
+function initPresenceWatcher() {
+  // Sicherstellen, dass kein altes Interval läuft
+  if (presenceIntervalId !== null) {
+    clearInterval(presenceIntervalId);
+    presenceIntervalId = null;
+  }
+
+  function startLoop() {
+    // erste Ausführung sofort
+    updatePresenceOnce();
+    // dann im Intervall (1s, kannst du natürlich anpassen)
+    presenceIntervalId = setInterval(updatePresenceOnce, 1000);
+  }
+
+  function waitForUserName() {
+    const name = getUserNameFromPage();
+    if (name) {
+      presenceUserName = name;
+      console.log("[Presence] Benutzername erkannt:", presenceUserName);
+      startLoop();
+      return;
+    }
+
+    // Wenn noch nicht da, nach 500ms nochmal probieren
+    setTimeout(waitForUserName, 500);
+  }
+
+  waitForUserName();
+}
+
+// Script-Start
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initPresenceWatcher);
+} else {
+  initPresenceWatcher();
+}
+
+
+
+
+
+
+
+
+
+
+
+
 async function initialize() {
 	var test = document.querySelector('iframe[class="iframeBase"]')
 	while (test == null){
@@ -5428,7 +5847,7 @@ async function initialize() {
 		test = document.querySelector('iframe[class="iframeBase"]')
 	}
 
-
+	fixMyViewColumns();
 	setInterval(manageHeights, 500);
 	observeAddToCartBtnsForFocusSwitchOnItemSeachBar();
 	monitorOrderPage();
