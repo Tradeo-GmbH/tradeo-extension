@@ -2843,27 +2843,51 @@ function processBarcodeElements() {
                     const artikelId = firstChildWithoutClass.innerText.trim();
                     //console.log("Artikel-ID ist gültig: " + artikelId);
 
-                    // Div duplizieren
+                    // Basis-Styling für beide geklonten Buttons
+                    const styleBase = (div) => {
+                        div.style.backgroundColor = 'rgb(255, 255, 170)'; // #FFFFAA
+                        div.style.color = '#000';
+                    };
+
+                    // Erster geklonter Button (normales Label)
                     const duplicatedDiv = barcodeDiv.cloneNode(true);
+                    styleBase(duplicatedDiv);
+                    duplicatedDiv.style.width = '80px'; // feste Breite für ersten Button
+                    // Icon im 1. Button verkleinern
+                    duplicatedDiv.style.backgroundSize = '50% auto';
+                    duplicatedDiv.style.backgroundPosition = 'center center';
 
-                    // Style hinzufügen
-                    duplicatedDiv.style.backgroundColor = '#ffaaaa';
-                    duplicatedDiv.style.color = '#000';
-
-                    // Event Listener hinzufügen
                     duplicatedDiv.addEventListener('click', () => {
                         window.open(`https://www.tradeo-tools.de/items/label/${artikelId}`, '_blank');
-                        //window.open(`https://www.google.com/search?q=${artikelId}`, '_blank');
                     });
 
-                    // Als zweites Kind im Parent hinzufügen
+                    // Zweiter geklonter Button (kleines Label ?small=true)
+                    const duplicatedDivSmall = barcodeDiv.cloneNode(true);
+                    styleBase(duplicatedDivSmall);
+                    // KEINE Größenanpassung des Icons beim 2. Button
+                    duplicatedDivSmall.addEventListener('click', () => {
+                        window.open(`https://www.tradeo-tools.de/items/label/${artikelId}?small=true`, '_blank');
+                    });
+
+                    // Als zweites und drittes Kind im Parent hinzufügen (falls möglich),
+                    // ansonsten ans Ende anhängen
                     if (parent.children.length > 1) {
+                        // Ersten Button auf Position 1
                         parent.insertBefore(duplicatedDiv, parent.children[1]);
+
+                        // Zweiten Button direkt dahinter (Position 2, oder ans Ende, falls kürzer)
+                        if (parent.children.length > 2) {
+                            parent.insertBefore(duplicatedDivSmall, parent.children[2]);
+                        } else {
+                            parent.appendChild(duplicatedDivSmall);
+                        }
                     } else {
+                        // Wenn nur 0 oder 1 Kind existiert, einfach anhängen
                         parent.appendChild(duplicatedDiv);
+                        parent.appendChild(duplicatedDivSmall);
                     }
 
-                    // Hilfsattribut setzen
+                    // Hilfsattribut setzen, damit nicht mehrfach dupliziert wird
                     barcodeDiv.setAttribute('data-duplicated', 'true');
                 }
             });
@@ -2872,6 +2896,7 @@ function processBarcodeElements() {
         console.error('Fehler bei der Verarbeitung:', error);
     }
 }
+
 
 /*function retrieveOrderInfo() {
 	const match = window.location.href.match(/\/order\/order-ui(?:_[^/]+)?\/(\d{6})(?:\/|\/.*)?/);
