@@ -1,7 +1,18 @@
 // content-oonn.js
 // Wird auf <all_urls> geladen (siehe Manifest)
 
-const browserApiOonn = typeof browser !== "undefined" ? browser : chrome;
+// NEU
+const browserApiOonn =
+  (typeof browser !== "undefined" &&
+    browser.runtime &&
+    typeof browser.runtime.sendMessage === "function" &&
+    browser) ||
+  (typeof chrome !== "undefined" &&
+    chrome.runtime &&
+    typeof chrome.runtime.sendMessage === "function" &&
+    chrome) ||
+  null;
+
 
 (() => {
   console.log("[oonn] content-oonn.js geladen");
@@ -12,6 +23,41 @@ const browserApiOonn = typeof browser !== "undefined" ? browser : chrome;
   let lastActiveElement = null;
   let lastInputSelection = null;  // { start, end } für Input/Textarea
   let lastSelectionRange = null;  // Range für contentEditable / andere
+
+  // ----------------------------------------------------
+  // Helper: kurzer Popup-Hinweis (Toast)
+  // ----------------------------------------------------
+
+  function showTransientMessage(message) {
+    try {
+      const existing = document.getElementById("tradeo-toast-message");
+      if (existing) existing.remove();
+    } catch (e) {}
+
+    const toast = document.createElement("div");
+    toast.id = "tradeo-toast-message";
+    toast.textContent = message;
+    toast.style.position = "fixed";
+    toast.style.left = "50%";
+    toast.style.bottom = "24px";
+    toast.style.transform = "translateX(-50%)";
+    toast.style.background = "rgba(0, 0, 0, 0.85)";
+    toast.style.color = "#fff";
+    toast.style.padding = "6px 12px";
+    toast.style.borderRadius = "4px";
+    toast.style.fontSize = "12px";
+    toast.style.fontFamily = "sans-serif";
+    toast.style.zIndex = "999999";
+    toast.style.boxShadow = "0 2px 8px rgba(0,0,0,0.4)";
+    toast.style.maxWidth = "80%";
+    toast.style.textAlign = "center";
+
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+      toast.remove();
+    }, 2000);
+  }
 
   // ----------------------------------------------------
   // Key-Handling
@@ -67,14 +113,25 @@ const browserApiOonn = typeof browser !== "undefined" ? browser : chrome;
   // ----------------------------------------------------
 
   function triggerOidFlow() {
+    if (!browserApiOonn) {
+      console.warn("[oonn] Keine Extension-API verfügbar (runtime.sendMessage fehlt).");
+      deleteLast4CharsAtSnapshotPosition();
+      showTransientMessage("OID-Funktion nicht verfügbar.");
+      return;
+    }
+
     browserApiOonn.runtime.sendMessage({ type: "GET_OIDS" }, (response) => {
       if (browserApiOonn.runtime.lastError) {
         console.warn("[oonn] runtime.lastError:", browserApiOonn.runtime.lastError);
+        deleteLast4CharsAtSnapshotPosition();
+        showTransientMessage("Fehler bei der OID-Suche.");
         return;
       }
 
       if (!response || !Array.isArray(response.items) || response.items.length === 0) {
         console.log("[oonn] Keine Plenty-OIDs gefunden.");
+        deleteLast4CharsAtSnapshotPosition();
+        showTransientMessage("Keine Plenty-OID gefunden.");
         return;
       }
 
@@ -107,6 +164,11 @@ const browserApiOonn = typeof browser !== "undefined" ? browser : chrome;
   // ----------------------------------------------------
   // Einfügen & 4 Zeichen löschen
   // ----------------------------------------------------
+
+  function deleteLast4CharsAtSnapshotPosition() {
+    // einfach wie Einfügen behandeln, aber mit leerem Text
+    insertTextAtSnapshotPosition("");
+  }
 
   function insertTextAtSnapshotPosition(text) {
     const active = lastActiveElement || document.activeElement;
@@ -163,45 +225,47 @@ const browserApiOonn = typeof browser !== "undefined" ? browser : chrome;
     console.log("[oonn] Textfeld aktualisiert, Cursor bei", newCursorPos);
   }
 
-  function insertUsingRange(range, text) {
+    function insertUsingRange(range, text) {
     const workRange = range.cloneRange();
 
     try {
-      if (workRange.collapsed && workRange.startContainer.nodeType === Node.TEXT_NODE) {
+        if (workRange.collapsed && workRange.startContainer.nodeType === Node.TEXT_NODE) {
         const node = workRange.startContainer;
         const offset = workRange.startOffset;
         const newStart = Math.max(0, offset - 4); // letzte 4 Zeichen
         workRange.setStart(node, newStart);
-      }
-
-      // "oonn" / markierten Text löschen
-      workRange.deleteContents();
-
-      // OID-Text einfügen
-      const textNode = document.createTextNode(text);
-      workRange.insertNode(textNode);
-
-      // Cursor ans Ende der eingefügten OID setzen
-      const sel = window.getSelection();
-      if (sel) {
-        const afterRange = document.createRange();
-        afterRange.setStartAfter(textNode);
-        afterRange.collapse(true);
-        sel.removeAllRanges();
-        sel.addRange(afterRange);
-      }
-
-      console.log("[oonn] Text via Range eingefügt.");
-    } catch (err) {
-      console.warn("[oonn] Fehler beim Einfügen über Range, Fallback execCommand:", err);
-      try {
-        for (let i = 0; i < 4; i++) {
-          document.execCommand("delete", false, null);
         }
-        document.execCommand("insertText", false, text);
-      } catch (err2) {
+
+        // "oonn" / markierten Text löschen
+        workRange.deleteContents();
+
+        if (text) {
+        const textNode = document.createTextNode(text);
+        workRange.insertNode(textNode);
+
+        const sel = window.getSelection();
+        if (sel) {
+            const afterRange = document.createRange();
+            afterRange.setStartAfter(textNode);
+            afterRange.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(afterRange);
+        }
+        }
+
+        console.log("[oonn] Text via Range eingefügt/gelöscht.");
+    } catch (err) {
+        console.warn("[oonn] Fehler beim Einfügen über Range, Fallback execCommand:", err);
+        try {
+        for (let i = 0; i < 4; i++) {
+            document.execCommand("delete", false, null);
+        }
+        if (text) {
+            document.execCommand("insertText", false, text);
+        }
+        } catch (err2) {
         console.warn("[oonn] execCommand-Fallback im Range-Case fehlgeschlagen:", err2);
-      }
+        }
     }
-  }
+    }
 })();
