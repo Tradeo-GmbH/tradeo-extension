@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Tradeo Extension - DEV BUILD",
-  "version": "3.0.1.5",
+  "version": "3.0.3.3",
   "description": "COPYRIGHT ANDRE BURKARD",
 
   "browser_specific_settings": {
@@ -13,8 +13,22 @@
 
   "permissions": [
     "tabs",
-    "clipboardWrite"
+    "clipboardWrite",
+    "storage"
   ],
+
+  "host_permissions": [
+    "https://presence.tradeo.risingsilence.de/*",
+    "https://desk.tradeo.de/*",
+    "https://secure.helpscout.net/*",
+    "https://*.plentymarkets-cloud-de.com/*",
+    "https://p7843.my.plentysystems.com/*"
+  ],
+
+  "background": {
+    "scripts": ["background.js"],
+    "service_worker": "background.js"
+  },
 
   "icons": {
     "16": "icon16.png",
@@ -31,7 +45,18 @@
       "js": [
         "plenty.js"
       ],
+      "run_at": "document_idle",
       "all_frames": false
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content-ttnn.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content-oonn.js"],
+      "run_at": "document_idle"
     },
     {
       "matches": [
