@@ -3080,10 +3080,10 @@ function moveZahlungsartToEnd() {
   const paymentMethodHost = document.querySelector('terra-order-ui-payment-method');
   if (!paymentMethodHost) return;
 
-  const root = paymentMethodHost.parentElement?.parentElement;
+  const root = paymentMethodHost.parentElement.parentElement;
   if (!root) return;
 
-  const cards = root.querySelectorAll('div[class*="my-view-draggable-element col-6"');
+  const cards = root.querySelectorAll('div[class*="my-view-draggable-element"');
 
   let zahlungsartEl = null;
 
@@ -3137,7 +3137,8 @@ function addButtonsToOrder() {
 
 	//auskommentiert, weil tagBar in Verwendung:
 	//const firstRow = document.querySelectorAll('terra-my-view-column')[0]
-	const tagBar = document.querySelector('div[class="sortable-list sortableDisabled row"]');
+	const tagBarPre = document.querySelector('terra-order-ui-status')
+	const tagBar = tagBarPre.parentElement
 	const secondRowSecondChild = document.querySelector('terra-order-ui-payment-method');
 	let secondRow = null;
 	if (secondRowSecondChild) {
